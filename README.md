@@ -1,2 +1,3 @@
-# archipel-ipbeacon
-IPND implentation for Archipel Core
+# Archipel IP Beacon
+
+> IPND implentation for Archipel Core

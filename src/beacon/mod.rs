@@ -46,7 +46,7 @@ impl Beacon {
     /// Clone current beacon and increment sequence number
     pub fn next(&self) -> Self {
         let mut next = self.clone();
-        next.sequence_number += 1;
+        next.sequence_number = next.sequence_number.wrapping_add(1);
         next
     }
 

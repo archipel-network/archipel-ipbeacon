@@ -10,7 +10,7 @@ use crate::beacon::Beacon;
 mod beacon;
 
 #[derive(Debug, Parser)]
-#[command(about="Advertize ud3tn node using IPNDv7 on the network", long_about = None)]
+#[command(about="Create IPNDv8 beacon and output it to stdout", long_about = None)]
 struct CLIArgs {
     /// Advertized node ID
     #[arg(long)]

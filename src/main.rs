@@ -1,8 +1,11 @@
+use std::os::unix::net::UnixStream;
+use std::path::PathBuf;
 use std::time::Duration;
 use std::str::FromStr;
 use beacon::Beacon;
 use clap::Parser;
 use discovery::start_discovery;
+use ud3tn_aap::Agent;
 
 mod beacon;
 mod discovery;
@@ -14,12 +17,12 @@ struct CLIArgs {
     #[arg(short, long)]
     verbose: bool,
 
-    /// Advertized node ID
-    #[arg(long)]
-    node_id: Option<String>,
+    /// Socket of archipel core runtime to configure
+    #[arg(short, long="socket", default_value="/var/run/archipel-core/archipel-core.socket")]
+    socket_path: PathBuf,
 
     /// Duration in seconds between two advertizments
-    #[arg(short, long="period", value_name="DURATION")]
+    #[arg(short, long="period", value_name="DURATION", default_value="30")]
     period_secs: u64,
     
     /// Add a TCPCLv4 convergence layer to advertizments
@@ -50,9 +53,17 @@ fn main() {
     let args = CLIArgs::parse();
     let period = Duration::from_secs(args.period_secs);
 
+    let ud3tn_socket = UnixStream::connect(&args.socket_path)
+        .expect("Unable to connect to socket");
+
+    let aap = Agent::connect(ud3tn_socket, "ipbeacon".into())
+        .expect("Unable to connect to Archipel core");
+
+    let node_id = aap.node_eid.clone();
+
     let mut base_beacon = Beacon::new();
     
-    base_beacon.node_id = args.node_id;
+    base_beacon.node_id = Some(node_id.clone());
 
     base_beacon.period = Some(period);
 
@@ -88,5 +99,5 @@ fn main() {
         println!("Base beacon advertizment : {:#?}", base_beacon);
     }
     
-    start_discovery(args.verbose, base_beacon, period);
+    start_discovery(args.verbose, base_beacon, period, node_id);
 }

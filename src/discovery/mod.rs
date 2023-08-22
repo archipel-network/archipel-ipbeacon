@@ -1,6 +1,6 @@
 use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, IpAddr, Ipv4Addr}};
 
-use crate::beacon::Beacon;
+use crate::beacon::{Beacon, NodeIdentifier};
 use std::sync::atomic::Ordering;
 
 mod announcer;
@@ -9,7 +9,8 @@ mod receiver;
 pub fn start_discovery(
     verbose: bool,
     base_beacon: Beacon,
-    period: Duration
+    period: Duration,
+    node_id: NodeIdentifier
 ){
     let continue_trigger = Arc::new(AtomicBool::new(true));
 
@@ -36,7 +37,11 @@ pub fn start_discovery(
     let verbose_rec = verbose;
     let ctrigger_rec = continue_trigger.clone();
     let socket_rec = socket.try_clone().unwrap();
-    thread::spawn(move || receiver::receiver_task(verbose_rec, ctrigger_rec, socket_rec));
+    thread::spawn(move || receiver::receiver_task(
+        verbose_rec, 
+        ctrigger_rec, 
+        socket_rec,
+        node_id));
 
     announcer::announcer_task(verbose, continue_trigger, base_beacon, period, socket)
 }

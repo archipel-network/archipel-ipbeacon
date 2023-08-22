@@ -16,10 +16,6 @@ struct CLIArgs {
     #[arg(long)]
     node_id: Option<String>,
 
-    /// Show more debug messages
-    #[arg(short, long)]
-    verbose: bool,
-
     /// Duration in seconds between two advertizments
     #[arg(short, long="period", value_name="DURATION")]
     period_secs: Option<u64>,

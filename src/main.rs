@@ -18,7 +18,7 @@ struct CLIArgs {
     verbose: bool,
 
     /// Socket of archipel core runtime to configure
-    #[arg(short, long="socket", default_value="/var/run/archipel-core/archipel-core.socket")]
+    #[arg(short, long="socket", default_value="/run/archipel-core/archipel-core.socket")]
     socket_path: PathBuf,
 
     /// Duration in seconds between two advertizments

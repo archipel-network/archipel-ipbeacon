@@ -43,7 +43,22 @@ struct CLIArgs {
 
     /// Add physical address service to advertizments
     #[arg(long, value_name="ADDRESS")]
-    address: Option<String>
+    address: Option<String>,
+
+    /// Only listen and emit on ipv4
+    #[arg(short='4', long="ipv4")]
+    ipv4_only: bool,
+
+    /// Only listen and emit on ipv6
+    #[arg(short='6', long="ipv6")]
+    ipv6_only: bool
+}
+
+#[derive(Debug, Clone)]
+pub enum IpConfig {
+    Ipv4Only,
+    Ipv6Only,
+    Both
 }
 
 fn main() {
@@ -60,6 +75,14 @@ fn main() {
         .expect("Unable to connect to Archipel core");
 
     let node_id = aap.node_eid.clone();
+
+    let ip_config = if args.ipv4_only {
+        IpConfig::Ipv4Only
+    } else if args.ipv6_only {
+        IpConfig::Ipv6Only
+    } else {
+        IpConfig::Both
+    };
 
     let mut base_beacon = Beacon::new();
     
@@ -99,5 +122,5 @@ fn main() {
         println!("Base beacon advertizment : {:#?}", base_beacon);
     }
     
-    start_discovery(args.verbose, base_beacon, period, node_id);
+    start_discovery(args.verbose, ip_config, base_beacon, period, node_id, aap);
 }

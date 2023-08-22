@@ -1,16 +1,20 @@
-use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, IpAddr, Ipv4Addr}};
+use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::UdpSocket, io::{Read, Write}};
 
-use crate::beacon::{Beacon, NodeIdentifier};
+use ud3tn_aap::Agent;
+
+use crate::{beacon::{Beacon, NodeIdentifier}, IpConfig};
 use std::sync::atomic::Ordering;
 
 mod announcer;
 mod receiver;
 
-pub fn start_discovery(
+pub fn start_discovery<T: Read + Write>(
     verbose: bool,
+    ip_config: IpConfig,
     base_beacon: Beacon,
     period: Duration,
-    node_id: NodeIdentifier
+    node_id: NodeIdentifier,
+    aap: Agent<T>
 ){
     let continue_trigger = Arc::new(AtomicBool::new(true));
 
@@ -20,28 +24,56 @@ pub fn start_discovery(
         ctrigger_int.store(false, Ordering::SeqCst)
     }).unwrap();
 
-    let socket = UdpSocket::bind("[::]:3005")
-        .expect("Unable to bind v6 socket to [::]:3005");
+    let bind_addr = match ip_config {
+        IpConfig::Ipv4Only => "0.0.0.0:3005",
+        IpConfig::Both => "[::]:3005",
+        IpConfig::Ipv6Only => "[::]:3005",
+    };
+
+    let socket = UdpSocket::bind(bind_addr)
+        .expect(&format!("Unable to bind v6 socket to {}", bind_addr));
 
     socket.set_broadcast(true)
         .expect("Unable to allow socket to broadcast");
 
-    socket.set_multicast_loop_v4(false)
-        .expect("Unable to disable multicast loop v4");
-
-    socket.set_multicast_loop_v6(false)
-        .expect("Unable to disable multicast loop v6");
+    match ip_config {
+        IpConfig::Ipv4Only => {
+            socket.set_multicast_loop_v4(false)
+                .expect("Unable to disable multicast loop v4");
+        },
+        IpConfig::Ipv6Only => {
+            socket.set_multicast_loop_v6(false)
+            .expect("Unable to disable multicast loop v6");
+        },
+        IpConfig::Both => {
+            socket.set_multicast_loop_v4(false)
+                .expect("Unable to disable multicast loop v4");
+            socket.set_multicast_loop_v6(false)
+            .expect("Unable to disable multicast loop v6");
+        },
+    }
 
     println!("Starting discovery");
 
-    let verbose_rec = verbose;
-    let ctrigger_rec = continue_trigger.clone();
-    let socket_rec = socket.try_clone().unwrap();
-    thread::spawn(move || receiver::receiver_task(
-        verbose_rec, 
-        ctrigger_rec, 
-        socket_rec,
-        node_id));
+    let verbose_emit = verbose;
+    let ip_config_emit = ip_config.clone();
+    let ctrigger_emit = continue_trigger.clone();
+    let socket_emit = socket.try_clone().unwrap();
+    thread::spawn(move || announcer::announcer_task(
+        verbose_emit,
+        ip_config_emit,
+        ctrigger_emit,
+        base_beacon,
+        period,
+        socket_emit
+    ));
 
-    announcer::announcer_task(verbose, continue_trigger, base_beacon, period, socket)
+    receiver::receiver_task(
+        verbose, 
+        ip_config,
+        continue_trigger, 
+        socket,
+        node_id,
+        aap)
+
 }

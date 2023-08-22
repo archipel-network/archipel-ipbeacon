@@ -1,0 +1,11 @@
+[Unit]
+Description=Archipel IPBeacon
+Requires=ud3tn.service
+
+[Service]
+User=archipel
+ExecStart=/usr/bin/archipel-ipbeacon --socket "/run/archipel-core/archipel-core.socket" --ipv4 --tcpclv3 4556
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,5 @@
 mod serializer;
+mod deserializer;
 mod flags;
 
 use std::time::Duration;
@@ -17,7 +18,7 @@ pub struct Beacon {
 
     /// Sequence number of this beacon
     /// It is incremented by 1 each time a beacon is emitted
-    pub sequence_number: u32,
+    pub sequence_number: u64,
 
     /// Services available on this node
     /// Services can be convergence layers, application agents or other
@@ -30,10 +31,10 @@ pub struct Beacon {
 
 impl Beacon {
 
-    /// Create a new v5 beacon
+    /// Create a new v8 beacon
     pub fn new() -> Self {
         Self { 
-            version: 5,
+            version: 8,
             node_id: None, 
             sequence_number: 0,
             services: Vec::new(),
@@ -52,6 +53,11 @@ impl Beacon {
     /// Get beacon as bytes
     pub fn as_bytes(&self) -> Result<Vec<u8>, serde_cbor::Error> {
         serde_cbor::to_vec(&self)
+    }
+
+    /// Parse beacon from bytes
+    pub fn parse(bytes: &[u8]) -> Result<Self, serde_cbor::Error> {
+        serde_cbor::from_slice(bytes)
     }
 }
 

@@ -4,6 +4,7 @@ Requires=ud3tn.service
 
 [Service]
 User=archipel
+Environment="RUST_BACKTRACE=1"
 ExecStart=/usr/bin/archipel-ipbeacon --socket "/run/archipel-core/archipel-core.socket" --ipv4 --tcpclv3 4556
 Type=simple
 Restart=on-failure

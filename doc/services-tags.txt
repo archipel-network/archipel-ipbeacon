@@ -7,6 +7,6 @@
 |   3-63   UNASSIGNED (CLA service)                                 |
 |     64   GEO          {latitude (float32), longitude (float32)}   |
 |     69   ADDRESS      {Address} (string)}                         |
-| 10-125   UNASSIGNED                                               |
+| 70-125   UNASSIGNED                                               |
 |125-255   PRIVATE USE                                              |
 +-------------------------------------------------------------------+

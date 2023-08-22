@@ -1,4 +1,4 @@
-use serde::{Serialize, ser::SerializeSeq};
+use serde::{Serialize, ser::SerializeSeq, ser::SerializeTuple};
 use super::flags::{SOURCE_EID_PRESENT, SERVICE_BLOCK_PRESENT, BEACON_PERIOD_PRESENT};
 
 impl Serialize for super::Beacon {
@@ -33,7 +33,7 @@ impl Serialize for super::Beacon {
 
         beacon.serialize_element(&flags)?;
 
-        beacon.serialize_element(&self.period.map(|it| it.as_secs()))?;
+        beacon.serialize_element(&self.sequence_number)?;
 
         if let Some(node_id) = &self.node_id {
             beacon.serialize_element(node_id)?;
@@ -55,7 +55,7 @@ impl Serialize for super::Service {
     fn serialize<S: serde::Serializer>(&self, serializer: S)
         -> Result<S::Ok, S::Error> {
 
-        let mut base = serializer.serialize_seq(Some(2))?;
+        let mut base = serializer.serialize_tuple(2)?;
 
         let flag = match self {
             super::Service::TCPCLv4Service(_) => 0_u8,

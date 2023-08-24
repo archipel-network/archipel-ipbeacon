@@ -1,4 +1,4 @@
-use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::UdpSocket, io::{Read, Write}};
+use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, Ipv4Addr, Ipv6Addr}, io::{Read, Write}, str::FromStr};
 
 use ud3tn_aap::Agent;
 
@@ -11,6 +11,7 @@ mod receiver;
 pub fn start_discovery<T: Read + Write>(
     verbose: bool,
     ip_config: IpConfig,
+    broadcast: bool,
     base_beacon: Beacon,
     period: Duration,
     node_id: NodeIdentifier,
@@ -53,6 +54,16 @@ pub fn start_discovery<T: Read + Write>(
         },
     }
 
+    socket.join_multicast_v4(
+        &Ipv4Addr::from_str("224.0.0.108").unwrap(), 
+        &Ipv4Addr::UNSPECIFIED)
+        .expect("Unable to join ipv4 multicast group");
+
+    socket.join_multicast_v6(
+        &Ipv6Addr::from_str("ff02::d4cd:0305:3af1:aeef:75de").unwrap(), 
+        0)
+        .expect("Unable to join ipv6 multicast group");
+
     println!("Starting discovery");
 
     let verbose_emit = verbose;
@@ -62,6 +73,7 @@ pub fn start_discovery<T: Read + Write>(
     thread::spawn(move || announcer::announcer_task(
         verbose_emit,
         ip_config_emit,
+        broadcast,
         ctrigger_emit,
         base_beacon,
         period,

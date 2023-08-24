@@ -1,8 +1,0 @@
-Broadcast mode
-
-    255.255.255.255:3005
-    [ff02::1]:3005
-
-Multicast mode
-
-    wip

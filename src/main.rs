@@ -51,7 +51,11 @@ struct CLIArgs {
 
     /// Only listen and emit on ipv6
     #[arg(short='6', long="ipv6")]
-    ipv6_only: bool
+    ipv6_only: bool,
+
+    /// Broadcast beacons instead of multicast
+    #[arg(short, long)]
+    broadcast: bool
 }
 
 #[derive(Debug, Clone)]
@@ -122,5 +126,13 @@ fn main() {
         println!("Base beacon advertizment : {:#?}", base_beacon);
     }
     
-    start_discovery(args.verbose, ip_config, base_beacon, period, node_id, aap);
+    start_discovery(
+        args.verbose, 
+        ip_config,
+        args.broadcast,
+        base_beacon,
+        period,
+        node_id,
+        aap);
+
 }

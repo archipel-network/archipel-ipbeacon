@@ -31,3 +31,7 @@ Start system-wide neighbor discovery service (as root)
 ```sh-session
 systemctl start archipel-ipbeacon
 ```
+
+## Development
+
+See [Protocol specs](./doc/0-protocol-specs.md) for a description of implemented protocol.

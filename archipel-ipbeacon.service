@@ -1,6 +1,6 @@
 [Unit]
 Description=Archipel IPBeacon
-Requires=ud3tn.service
+Requires=archipel-core.service
 
 [Service]
 User=archipel

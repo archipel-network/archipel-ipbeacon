@@ -54,15 +54,19 @@ pub fn start_discovery<T: Read + Write>(
         },
     }
 
-    socket.join_multicast_v4(
+    match socket.join_multicast_v4(
         &Ipv4Addr::from_str("224.0.0.108").unwrap(), 
-        &Ipv4Addr::UNSPECIFIED)
-        .expect("Unable to join ipv4 multicast group");
+        &Ipv4Addr::UNSPECIFIED) {
+        Err(e) => println!("Unable to join ipv4 multicast group : {}", e),
+        _ => {}
+    }
 
-    socket.join_multicast_v6(
+    match socket.join_multicast_v6(
         &Ipv6Addr::from_str("ff02::d4cd:0305:3af1:aeef:75de").unwrap(), 
-        0)
-        .expect("Unable to join ipv6 multicast group");
+        0) {
+        Err(e) => println!("Unable to join ipv6 multicast group : {}", e),
+        _ => {},
+    }
 
     println!("Starting discovery");
 

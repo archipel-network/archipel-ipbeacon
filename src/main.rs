@@ -1,4 +1,3 @@
-use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::str::FromStr;
@@ -71,11 +70,8 @@ fn main() {
 
     let args = CLIArgs::parse();
     let period = Duration::from_secs(args.period_secs);
-
-    let ud3tn_socket = UnixStream::connect(&args.socket_path)
-        .expect("Unable to connect to socket");
-
-    let aap = Agent::connect(ud3tn_socket, "ipbeacon".into())
+    
+    let aap = Agent::connect_unix(&args.socket_path, "ipbeacon".into())
         .expect("Unable to connect to Archipel core");
 
     let node_id = aap.node_eid.clone();

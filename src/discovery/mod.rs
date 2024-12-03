@@ -1,4 +1,4 @@
-use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, Ipv4Addr, Ipv6Addr}, io::{Read, Write}, str::FromStr};
+use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, Ipv4Addr, Ipv6Addr}, str::FromStr};
 
 use ud3tn_aap::Agent;
 
@@ -8,14 +8,14 @@ use std::sync::atomic::Ordering;
 mod announcer;
 mod receiver;
 
-pub fn start_discovery<T: Read + Write>(
+pub fn start_discovery(
     verbose: bool,
     ip_config: IpConfig,
     broadcast: bool,
     base_beacon: Beacon,
     period: Duration,
     node_id: NodeIdentifier,
-    aap: Agent<T>
+    aap: Agent
 ){
     let continue_trigger = Arc::new(AtomicBool::new(true));
 

@@ -1,17 +1,17 @@
-use std::{thread, time::Duration, sync::{atomic::AtomicBool, Arc}, net::{UdpSocket, SocketAddr, IpAddr}, io::{ErrorKind, Read, Write}, collections::HashMap};
+use std::{thread, time::Duration, sync::{atomic::AtomicBool, Arc}, net::{UdpSocket, SocketAddr, IpAddr}, io::ErrorKind, collections::HashMap};
 use std::sync::atomic::Ordering;
 
-use ud3tn_aap::{Agent, config::{ConfigBundle, AddContact, Contact, ContactDataRate}};
+use ud3tn_aap::{Agent, config::{ConfigBundle, Contact, ContactDataRate}};
 
 use crate::{beacon::{Beacon, NodeIdentifier}, IpConfig};
 
-pub fn receiver_task<T: Read + Write>(
+pub fn receiver_task(
     verbose: bool,
     ip_config: IpConfig,
     continue_trigger: Arc<AtomicBool>,
     socket: UdpSocket,
     self_node_id: NodeIdentifier,
-    mut aap: Agent<T>
+    mut aap: Agent
 ) {
     socket.set_nonblocking(true)
         .expect("Receiver socket can't be set non-blocking");
@@ -47,14 +47,14 @@ pub fn receiver_task<T: Read + Write>(
     }
 }
 
-fn try_beacon<T: Read + Write>(
+fn try_beacon(
     verbose: bool,
     ip_config: &IpConfig,
     buf: &[u8],
     source: SocketAddr,
     seq_num_index: &mut HashMap<SocketAddr, u64>,
     self_node_id: &NodeIdentifier,
-    aap: &mut Agent<T>
+    aap: &mut Agent
 ){
     match Beacon::parse(buf) {
         Ok(beacon) => {
@@ -105,7 +105,7 @@ fn try_beacon<T: Read + Write>(
     };
 }
 
-fn add_contact<T: Read+Write>(verbose: bool, beacon: Beacon, source: SocketAddr, aap:&mut Agent<T>){
+fn add_contact(verbose: bool, beacon: Beacon, source: SocketAddr, aap:&mut Agent){
 
     let node_id = match beacon.node_id {
         Some(it) => it,
@@ -144,7 +144,7 @@ fn add_contact<T: Read+Write>(verbose: bool, beacon: Beacon, source: SocketAddr,
         println!("Adding contact to {} with cla {} during {}s", &node_id, &cla, duration.as_secs());
     }
 
-    let config_bundle = ConfigBundle::AddContact(AddContact {
+    let config_bundle = ConfigBundle::AddContact {
         eid: node_id,
         reliability: None,
         cla_address: cla,
@@ -154,7 +154,7 @@ fn add_contact<T: Read+Write>(verbose: bool, beacon: Beacon, source: SocketAddr,
                 duration,
                 ContactDataRate::Unlimited)
         ],
-    });
+    };
 
     let result = aap.send_config(config_bundle);
 

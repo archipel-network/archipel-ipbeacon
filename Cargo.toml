@@ -8,7 +8,7 @@ clap = { version = "4.3.23", features=["derive"]}
 ctrlc = "3.4.0"
 serde = "1.0.183"
 serde_cbor = "0.11.2"
-ud3tn_aap = {git = "https://github.com/archipel-network/rust-ud3tn.git"}
+ud3tn-aap = {git = "https://github.com/archipel-network/rust-ud3tn.git"}
 
 [[bin]]
 name = "create-beacon"

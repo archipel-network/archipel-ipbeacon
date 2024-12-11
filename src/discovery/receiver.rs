@@ -116,7 +116,7 @@ fn add_contact(verbose: bool, beacon: Beacon, source: SocketAddr, aap:&mut Agent
     };
 
     let tcpclv3port = beacon.services.iter().filter_map(|it| match it {
-        crate::beacon::Service::TCPCLv3Service(port) => Some(port),
+        crate::beacon::Service::TCPCLv3(port) => Some(port),
         _ => None
     }).next();
 

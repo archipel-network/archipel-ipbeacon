@@ -14,7 +14,7 @@ impl Serialize for super::Beacon {
                 l += 1;
             }
 
-            if self.services.len() > 0 {
+            if !self.services.is_empty() {
                 f |= SERVICE_BLOCK_PRESENT;
                 l += 1;
             }
@@ -39,7 +39,7 @@ impl Serialize for super::Beacon {
             beacon.serialize_element(node_id)?;
         }
 
-        if self.services.len() > 0 {
+        if !self.services.is_empty() {
             beacon.serialize_element(&self.services)?;
         }
 
@@ -58,9 +58,9 @@ impl Serialize for super::Service {
         let mut base = serializer.serialize_tuple(2)?;
 
         let flag = match self {
-            super::Service::TCPCLv4Service(_) => 0_u8,
-            super::Service::TCPCLv3Service(_) => 1_u8,
-            super::Service::MTCPCLService(_) => 2_u8,
+            super::Service::TCPCLv4(_) => 0_u8,
+            super::Service::TCPCLv3(_) => 1_u8,
+            super::Service::MTCPCL(_) => 2_u8,
             super::Service::GeoLocation(_, _) => 64_u8,
             super::Service::Address(_) => 65_u8,
             super::Service::Unknown(tag, _) => *tag,
@@ -69,13 +69,13 @@ impl Serialize for super::Service {
         base.serialize_element(&flag)?;
 
         match self {
-            super::Service::TCPCLv4Service(port)
+            super::Service::TCPCLv4(port)
                 => base.serialize_element(port)?,
 
-            super::Service::TCPCLv3Service(port)
+            super::Service::TCPCLv3(port)
                 => base.serialize_element(port)?,
 
-            super::Service::MTCPCLService(port)
+            super::Service::MTCPCL(port)
                 => base.serialize_element(port)?,
 
             super::Service::GeoLocation(lat, lon)

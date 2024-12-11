@@ -32,7 +32,7 @@ pub fn start_discovery(
     };
 
     let socket = UdpSocket::bind(bind_addr)
-        .expect(&format!("Unable to bind v6 socket to {}", bind_addr));
+        .unwrap_or_else(|_| panic!("Unable to bind v6 socket to {}", bind_addr));
 
     socket.set_broadcast(true)
         .expect("Unable to allow socket to broadcast");
@@ -54,19 +54,13 @@ pub fn start_discovery(
         },
     }
 
-    match socket.join_multicast_v4(
+    if let Err(e) = socket.join_multicast_v4(
         &Ipv4Addr::from_str("224.0.0.108").unwrap(), 
-        &Ipv4Addr::UNSPECIFIED) {
-        Err(e) => println!("Unable to join ipv4 multicast group : {}", e),
-        _ => {}
-    }
+        &Ipv4Addr::UNSPECIFIED) { println!("Unable to join ipv4 multicast group : {}", e) }
 
-    match socket.join_multicast_v6(
+    if let Err(e) = socket.join_multicast_v6(
         &Ipv6Addr::from_str("ff02::d4cd:0305:3af1:aeef:75de").unwrap(), 
-        0) {
-        Err(e) => println!("Unable to join ipv6 multicast group : {}", e),
-        _ => {},
-    }
+        0) { println!("Unable to join ipv6 multicast group : {}", e) }
 
     println!("Starting discovery");
 

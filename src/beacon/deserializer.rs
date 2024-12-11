@@ -96,19 +96,19 @@ impl<'de> Visitor<'de> for ServiceVisitor {
                 0 => {
                     let port = seq.next_element()?
                         .ok_or(Error::missing_field("convergence layer port"))?;
-                    Ok(super::Service::TCPCLv4Service(port))
+                    Ok(super::Service::TCPCLv4(port))
                 },
 
                 1 => {
                     let port = seq.next_element()?
                         .ok_or(Error::missing_field("convergence layer port"))?;
-                    Ok(super::Service::TCPCLv3Service(port))
+                    Ok(super::Service::TCPCLv3(port))
                 },
 
                 2 => {
                     let port = seq.next_element()?
                         .ok_or(Error::missing_field("convergence layer port"))?;
-                    Ok(super::Service::MTCPCLService(port))
+                    Ok(super::Service::MTCPCL(port))
                 },
 
                 64 => {

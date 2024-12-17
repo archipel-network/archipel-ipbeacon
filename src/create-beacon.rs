@@ -69,7 +69,7 @@ fn main() {
                                 .collect();
 
         base_beacon.services.push(beacon::Service::GeoLocation(
-            *parts.get(0).expect("Missing latitude"),
+            *parts.first().expect("Missing latitude"),
             *parts.get(1).expect("Missing longitude")
         ));
     }
@@ -78,5 +78,5 @@ fn main() {
         base_beacon.services.push(beacon::Service::Address(address));
     }
 
-    std::io::stdout().write(&base_beacon.as_bytes().unwrap()).unwrap();
+    std::io::stdout().write_all(&base_beacon.as_bytes().unwrap()).unwrap();
 }

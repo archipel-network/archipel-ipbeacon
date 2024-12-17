@@ -14,7 +14,7 @@ impl Serialize for super::Beacon {
                 l += 1;
             }
 
-            if self.services.len() > 0 {
+            if !self.services.is_empty() {
                 f |= SERVICE_BLOCK_PRESENT;
                 l += 1;
             }
@@ -39,7 +39,7 @@ impl Serialize for super::Beacon {
             beacon.serialize_element(node_id)?;
         }
 
-        if self.services.len() > 0 {
+        if !self.services.is_empty() {
             beacon.serialize_element(&self.services)?;
         }
 

@@ -71,7 +71,8 @@ fn try_beacon(
             let is_fresh = match seq_num_index.get(&source) {
                 Some(seq_num) => beacon.sequence_number > *seq_num, //bug Should tke into account sequence number overflowing (reset to 0)
                 None => {
-                    println!("New neighbour discovered at {}", source);
+                    println!("New neighbour discovered at {} (node id:{})", source,
+                        beacon.node_id.as_ref().unwrap_or(&"<undefined>".to_owned()));
                     true
                 },
             };

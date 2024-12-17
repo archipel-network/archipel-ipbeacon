@@ -109,7 +109,7 @@ fn main() {
                                 .collect();
 
         base_beacon.services.push(beacon::Service::GeoLocation(
-            *parts.get(0).expect("Missing latitude"),
+            *parts.first().expect("Missing latitude"),
             *parts.get(1).expect("Missing longitude")
         ));
     }

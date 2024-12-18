@@ -1,12 +1,18 @@
 [Unit]
 Description=Archipel IPBeacon
 Requires=archipel-core.service
+After=archipel-core.service
+PartOf=archipel.slice
 
 [Service]
 User=archipel
+
 Environment="RUST_BACKTRACE=1"
-ExecStart=/usr/bin/archipel-ipbeacon --socket "/run/archipel-core/archipel-core.socket" --ipv4 --tcpclv3 4556
-Type=simple
+Environment="MTCP_PORT=4224"
+EnvironmentFile=/etc/archipel-core/conf.env
+
+ExecStart=/usr/bin/archipel-ipbeacon --socket "/run/archipel-core/archipel-core.socket" --mtcpcl "$MTCP_PORT"
+Type=exec
 Restart=on-failure
 
 [Install]

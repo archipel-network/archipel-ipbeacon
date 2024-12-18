@@ -2,6 +2,8 @@
 name = "archipel-ipbeacon"
 version = "0.1.0"
 edition = "2021"
+description = "Archipel neighbour discovery"
+authors = ["EpicKiwi <me@epickiwi.fr>"]
 
 [dependencies]
 clap = { version = "4.3.23", features=["derive"]}
@@ -21,3 +23,15 @@ path = "src/parse-beacon.rs"
 [[bin]]
 name = "daemon"
 path = "src/main.rs"
+
+[package.metadata.deb]
+maintainer = "EpicKiwi <me@epickiwi.fr>"
+license-file = ["LICENSE", "0"]
+depends = ["$auto", "archipel-core"]
+section = "net"
+priority = "optional"
+maintainer-scripts = "package"
+assets = [
+    ["target/release/daemon", "usr/bin/archipel-ipbeacon", "755"],
+    ["archipel-ipbeacon.service", "usr/lib/systemd/system/archipel-ipbeacon.service", "444"],
+]

@@ -1,9 +1,11 @@
-use std::{thread, time::Duration, sync::{atomic::AtomicBool, Arc}, net::{UdpSocket, SocketAddr, IpAddr}, io::ErrorKind, collections::HashMap};
+use std::{collections::{HashMap, HashSet}, io::ErrorKind, mem::{discriminant, Discriminant}, net::{IpAddr, SocketAddr, UdpSocket}, sync::{atomic::AtomicBool, Arc}, thread, time::Duration};
 use std::sync::atomic::Ordering;
 
 use ud3tn_aap::{Agent, config::{ConfigBundle, Contact, ContactDataRate}};
 
-use crate::{beacon::{Beacon, NodeIdentifier}, IpConfig};
+use crate::{beacon::{Beacon, NodeIdentifier, Service}, IpConfig};
+
+type AvailableClaSet = HashSet<Discriminant<Service>>;
 
 pub fn receiver_task(
     verbose: bool,
@@ -11,10 +13,17 @@ pub fn receiver_task(
     continue_trigger: Arc<AtomicBool>,
     socket: UdpSocket,
     self_node_id: NodeIdentifier,
-    mut aap: Agent
+    mut aap: Agent,
+    emitted_beacon: Beacon
 ) {
     socket.set_nonblocking(true)
         .expect("Receiver socket can't be set non-blocking");
+
+    let available_cla: AvailableClaSet = HashSet::from_iter(
+        emitted_beacon.services.into_iter()
+            .filter(Service::is_cla)
+            .map(|it| discriminant(&it))
+        );
 
     let mut buf = [0_u8; 100_000];
     let mut seq_nums:HashMap<SocketAddr, u64> = HashMap::new();
@@ -31,7 +40,8 @@ pub fn receiver_task(
                         source,
                         &mut seq_nums,
                         &self_node_id,
-                        &mut aap
+                        &mut aap,
+                        &available_cla
                     )
                 }
             },
@@ -54,7 +64,8 @@ fn try_beacon(
     source: SocketAddr,
     seq_num_index: &mut HashMap<SocketAddr, u64>,
     self_node_id: &NodeIdentifier,
-    aap: &mut Agent
+    aap: &mut Agent,
+    available_cla: &AvailableClaSet
 ){
     match Beacon::parse(buf) {
         Ok(beacon) => {
@@ -99,67 +110,43 @@ fn try_beacon(
                 println!("{:?}", beacon)
             }
 
-            add_contact(verbose, beacon, source, aap);
+            let Some(service) = beacon.services.iter().find(|it| available_cla.contains(&discriminant(it))) else {
+                eprintln!("No compatible CLA found in beacon, ignoring");
+                return;
+            };
 
+            let Some(node_id) = beacon.node_id else {
+                eprintln!("Received beacon without eid, ignoring");
+                return;
+            };
+
+            let duration = beacon.period.map(|it| it*2).unwrap_or(Duration::from_secs(30));
+
+            let cla = service.as_cla_address(source.ip()).unwrap();
+
+            if verbose {
+                println!("Adding contact to {} with cla {} during {}s", &node_id, &cla, duration.as_secs());
+            }
+
+            let config_bundle = ConfigBundle::AddContact {
+                eid: node_id,
+                reliability: None,
+                cla_address: cla,
+                reaches_eid: Vec::new(),
+                contacts: vec![
+                    Contact::from_now_during(
+                        duration,
+                        ContactDataRate::Unlimited)
+                ],
+            };
+
+            let result = aap.send_config(config_bundle);
+
+            if let Err(e) = result {
+                println!("Error adding comtact ton ud3tn config {}", e);
+            }
+                    
         },
         Err(e) => if verbose { println!("Invalid beacon received {}", e) },
     };
-}
-
-fn add_contact(verbose: bool, beacon: Beacon, source: SocketAddr, aap:&mut Agent){
-
-    let node_id = match beacon.node_id {
-        Some(it) => it,
-        None => {
-            if verbose {  println!("Missing node id in beacon") }
-            return;
-        },
-    };
-
-    let tcpclv3port = beacon.services.iter().filter_map(|it| match it {
-        crate::beacon::Service::TCPCLv3Service(port) => Some(port),
-        _ => None
-    }).next();
-
-    let tcpclv3port = match tcpclv3port {
-        Some(it) => it,
-        None => {
-            if verbose {  println!("No TCPCLv3 service available at {}", node_id) }
-            return;
-        },
-    };
-
-    let cla = match source.ip() {
-        std::net::IpAddr::V4(ipv4) => format!("tcpclv3:{}:{}",ipv4,tcpclv3port),
-        std::net::IpAddr::V6(ipv6) => {
-            match ipv6.to_ipv4(){
-                Some(ipv4) => format!("tcpclv3:{}:{}", ipv4, tcpclv3port),
-                None => format!("tcpclv3:[{}]:{}", ipv6, tcpclv3port),
-            }
-        },
-    };
-
-    let duration = beacon.period.map(|it| it*2).unwrap_or(Duration::from_secs(30));
-
-    if verbose {
-        println!("Adding contact to {} with cla {} during {}s", &node_id, &cla, duration.as_secs());
-    }
-
-    let config_bundle = ConfigBundle::AddContact {
-        eid: node_id,
-        reliability: None,
-        cla_address: cla,
-        reaches_eid: Vec::new(),
-        contacts: vec![
-            Contact::from_now_during(
-                duration,
-                ContactDataRate::Unlimited)
-        ],
-    };
-
-    let result = aap.send_config(config_bundle);
-
-    if let Err(e) = result {
-        println!("Error adding comtact ton ud3tn config {}", e);
-    }
 }

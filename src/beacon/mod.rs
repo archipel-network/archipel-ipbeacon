@@ -2,7 +2,7 @@ mod serializer;
 mod deserializer;
 mod flags;
 
-use std::time::Duration;
+use std::{fmt::Display, net::IpAddr, time::Duration};
 use serde_cbor::Value;
 
 pub type NodeIdentifier = String;
@@ -85,4 +85,40 @@ pub enum Service {
     /// An Unknown service
     /// (Service flag, service value)
     Unknown(u8, Value)
+}
+
+/// This service is not a convergence layer and cannot be converted into cla address
+#[derive(Debug)]
+pub struct NotClaError;
+
+impl Display for NotClaError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "This service is not a convergence layer")
+    }
+}
+
+impl Service {
+    pub fn is_cla(&self) -> bool {
+        matches!(self, Service::TCPCLv4Service(_)|Service::TCPCLv3Service(_)|Service::MTCPCLService(_))
+    }
+
+    pub fn as_cla_address(&self, source_address: IpAddr) -> Result<String, NotClaError> {
+        match self {
+            Service::TCPCLv4Service(port) => Ok(format!("tcpclv4:{}:{}", format_ip(source_address), port)),
+            Service::TCPCLv3Service(port) => Ok(format!("tcpclv3:{}:{}", format_ip(source_address), port)),
+            Service::MTCPCLService(port) => Ok(format!("mtcp:{}:{}", format_ip(source_address), port)),
+            _ => Err(NotClaError)
+        }
+    }
+}
+
+fn format_ip(ip: IpAddr) -> String {
+    match ip {
+        IpAddr::V4(ipv4_addr) => ipv4_addr.to_string(),
+        IpAddr::V6(ipv6_addr) => if let Some(ipv4_addr) = ipv6_addr.to_ipv4() {
+            ipv4_addr.to_string()
+        } else {
+            format!("[{}]", ipv6_addr)
+        },
+    }
 }

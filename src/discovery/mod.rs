@@ -65,6 +65,8 @@ pub fn start_discovery(
     }
 
     println!("Starting discovery");
+    
+    let emitted_beacon = base_beacon.clone();
 
     let verbose_emit = verbose;
     let ip_config_emit = ip_config.clone();
@@ -86,6 +88,8 @@ pub fn start_discovery(
         continue_trigger, 
         socket,
         node_id,
-        aap)
+        aap,
+        emitted_beacon
+    )
 
 }

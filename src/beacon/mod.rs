@@ -65,15 +65,16 @@ impl Beacon {
 pub enum Service {
     /// A TCP Convergence Layer v4 (RFC9174)
     /// First parameter is TCP port to connect to
-    TCPCLv4Service(u16),
+    TCPCLv4(u16),
 
     /// A TCP Convergence Layer v3 (RFC7242)
     /// First parameter is TCP port to connect to
-    TCPCLv3Service(u16),
+    TCPCLv3(u16),
 
     /// A Minimal TCP Convergence-Layer (draft-ietf-dtn-mtcpcl-01)
     /// First parameter us TCP port to connect to
-    MTCPCLService(u16),
+    #[allow(clippy::upper_case_acronyms)]
+    MTCPCL(u16),
 
     /// Geo location of node
     /// (latitude, longitude)
@@ -99,14 +100,14 @@ impl Display for NotClaError {
 
 impl Service {
     pub fn is_cla(&self) -> bool {
-        matches!(self, Service::TCPCLv4Service(_)|Service::TCPCLv3Service(_)|Service::MTCPCLService(_))
+        matches!(self, Service::TCPCLv4(_)|Service::TCPCLv3(_)|Service::MTCPCL(_))
     }
 
     pub fn as_cla_address(&self, source_address: IpAddr) -> Result<String, NotClaError> {
         match self {
-            Service::TCPCLv4Service(port) => Ok(format!("tcpclv4:{}:{}", format_ip(source_address), port)),
-            Service::TCPCLv3Service(port) => Ok(format!("tcpclv3:{}:{}", format_ip(source_address), port)),
-            Service::MTCPCLService(port) => Ok(format!("mtcp:{}:{}", format_ip(source_address), port)),
+            Service::TCPCLv4(port) => Ok(format!("tcpclv4:{}:{}", format_ip(source_address), port)),
+            Service::TCPCLv3(port) => Ok(format!("tcpclv3:{}:{}", format_ip(source_address), port)),
+            Service::MTCPCL(port) => Ok(format!("mtcp:{}:{}", format_ip(source_address), port)),
             _ => Err(NotClaError)
         }
     }

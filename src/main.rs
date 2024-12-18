@@ -91,15 +91,15 @@ fn main() {
     base_beacon.period = Some(period);
 
     if let Some(port) = args.tcpclv3 {
-        base_beacon.services.push(beacon::Service::TCPCLv3Service(port));
+        base_beacon.services.push(beacon::Service::TCPCLv3(port));
     }
 
     if let Some(port) = args.tcpclv4 {
-        base_beacon.services.push(beacon::Service::TCPCLv4Service(port));
+        base_beacon.services.push(beacon::Service::TCPCLv4(port));
     }
 
     if let Some(port) = args.mtcpcl {
-        base_beacon.services.push(beacon::Service::MTCPCLService(port));
+        base_beacon.services.push(beacon::Service::MTCPCL(port));
     }
 
     if let Some(str) = args.geolocation {

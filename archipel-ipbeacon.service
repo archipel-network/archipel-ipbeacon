@@ -11,7 +11,7 @@ Environment="RUST_BACKTRACE=1"
 Environment="MTCP_PORT=4224"
 EnvironmentFile=/etc/archipel-core/conf.env
 
-ExecStart=/usr/bin/archipel-ipbeacon --socket "/run/archipel-core/archipel-core.socket" --mtcpcl "$MTCP_PORT"
+ExecStart=/usr/bin/archipel-ipbeacon --socket "/run/archipel-core/archipel-core.socket" --ipv4 --mtcpcl "$MTCP_PORT"
 Type=exec
 Restart=on-failure
 

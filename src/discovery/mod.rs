@@ -1,4 +1,4 @@
-use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, Ipv4Addr, Ipv6Addr}, str::FromStr};
+use std::{net::{Ipv4Addr, Ipv6Addr, SocketAddr, UdpSocket}, str::FromStr, sync::{atomic::AtomicBool, Arc}, thread, time::Duration};
 
 use ud3tn_aap::{AapStream, RegisteredAgent};
 
@@ -15,7 +15,8 @@ pub fn start_discovery(
     base_beacon: Beacon,
     period: Duration,
     node_id: NodeIdentifier,
-    aap: RegisteredAgent<impl AapStream>
+    aap: RegisteredAgent<impl AapStream>,
+    extra_unicast: Vec<SocketAddr>
 ){
     let continue_trigger = Arc::new(AtomicBool::new(true));
 
@@ -79,7 +80,8 @@ pub fn start_discovery(
         ctrigger_emit,
         base_beacon,
         period,
-        socket_emit
+        socket_emit,
+        extra_unicast
     ));
 
     receiver::receiver_task(

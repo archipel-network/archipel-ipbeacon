@@ -1,4 +1,5 @@
-use std::path::PathBuf;
+use std::net::IpAddr;
+use std::{net::SocketAddr, path::PathBuf};
 use std::time::Duration;
 use std::str::FromStr;
 use beacon::Beacon;
@@ -54,7 +55,11 @@ struct CLIArgs {
 
     /// Broadcast beacons instead of multicast
     #[arg(short, long)]
-    broadcast: bool
+    broadcast: bool,
+
+    /// Send additionnal unicast beacons to pre-defined ip addresses
+    #[arg(short = 'D', long, value_name="IP ADDRESS")]
+    direct: Vec<IpAddr>
 }
 
 #[derive(Debug, Clone)]
@@ -85,6 +90,10 @@ fn main() {
     } else {
         IpConfig::Both
     };
+
+    let extra_unicast: Vec<SocketAddr> = args.direct.clone()
+        .into_iter().map(|it| SocketAddr::new(it, 3005))
+        .collect::<Vec<_>>();
 
     let mut base_beacon = Beacon::new();
     
@@ -131,6 +140,8 @@ fn main() {
         base_beacon,
         period,
         node_id,
-        aap);
+        aap,
+        extra_unicast
+    );
 
 }

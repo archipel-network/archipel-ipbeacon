@@ -1,4 +1,4 @@
-use std::{thread, time::Duration, sync::{Arc, atomic::AtomicBool}, net::UdpSocket};
+use std::{net::UdpSocket, net::SocketAddr, sync::{atomic::AtomicBool, Arc}, thread, time::Duration};
 
 use crate::{beacon::Beacon, IpConfig};
 use std::sync::atomic::Ordering;
@@ -10,7 +10,8 @@ pub fn announcer_task(
     continue_trigger: Arc<AtomicBool>,
     base_beacon: Beacon, 
     period: Duration,
-    socket: UdpSocket
+    socket: UdpSocket,
+    extra_unicast: Vec<SocketAddr>
 ) {
     let mut beacon = base_beacon;
 
@@ -41,6 +42,15 @@ pub fn announcer_task(
             match socket.send_to(&buf, addr) {
                 Ok(_) => if verbose { println!("Emitted v4 beacon #{}", beacon.sequence_number) },
                 Err(e) => println!("Error sending v4 beacon : {}", e),
+            }
+        }
+
+        for direct in &extra_unicast {
+            let addr = [direct.to_owned()];
+            if let Err(e) = socket.send_to(&buf, &addr.as_slice()) {
+                eprintln!("Failed to send direct beacon to {direct}: {e}");
+            } else if verbose {
+                println!("Direct beacon #{} emitted for {}", beacon.sequence_number, direct)
             }
         }
         

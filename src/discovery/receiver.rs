@@ -1,7 +1,7 @@
 use std::{collections::{HashMap, HashSet}, io::ErrorKind, mem::{discriminant, Discriminant}, net::{IpAddr, SocketAddr, UdpSocket}, sync::{atomic::AtomicBool, Arc}, thread, time::Duration};
 use std::sync::atomic::Ordering;
 
-use ud3tn_aap::{Agent, config::{ConfigBundle, Contact, ContactDataRate}};
+use ud3tn_aap::{config::{ConfigBundle, Contact, ContactDataRate}, AapStream, RegisteredAgent};
 
 use crate::{beacon::{Beacon, NodeIdentifier, Service}, IpConfig};
 
@@ -13,7 +13,7 @@ pub fn receiver_task(
     continue_trigger: Arc<AtomicBool>,
     socket: UdpSocket,
     self_node_id: NodeIdentifier,
-    mut aap: Agent,
+    mut aap: RegisteredAgent<impl AapStream>,
     emitted_beacon: Beacon
 ) {
     socket.set_nonblocking(true)
@@ -64,7 +64,7 @@ fn try_beacon(
     source: SocketAddr,
     seq_num_index: &mut HashMap<SocketAddr, u64>,
     self_node_id: &NodeIdentifier,
-    aap: &mut Agent,
+    aap: &mut RegisteredAgent<impl AapStream>,
     available_cla: &AvailableClaSet
 ){
     match Beacon::parse(buf) {

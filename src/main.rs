@@ -4,7 +4,7 @@ use std::str::FromStr;
 use beacon::Beacon;
 use clap::Parser;
 use discovery::start_discovery;
-use ud3tn_aap::Agent;
+use ud3tn_aap::{Agent, BaseAgent};
 
 mod beacon;
 mod discovery;
@@ -71,10 +71,12 @@ fn main() {
     let args = CLIArgs::parse();
     let period = Duration::from_secs(args.period_secs);
     
-    let aap = Agent::connect_unix(&args.socket_path, "ipbeacon".into())
-        .expect("Unable to connect to Archipel core");
+    let aap = Agent::connect_unix(&args.socket_path)
+        .expect("Unable to connect to Archipel core")
+        .register("ipbeacon".into())
+        .expect("Failed to register ipbeacon agent");
 
-    let node_id = aap.node_eid.clone();
+    let node_id = aap.node_id().to_owned();
 
     let ip_config = if args.ipv4_only {
         IpConfig::Ipv4Only

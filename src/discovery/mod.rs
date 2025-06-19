@@ -1,6 +1,6 @@
 use std::{time::Duration, thread, sync::{Arc, atomic::AtomicBool}, net::{UdpSocket, Ipv4Addr, Ipv6Addr}, str::FromStr};
 
-use ud3tn_aap::Agent;
+use ud3tn_aap::{AapStream, RegisteredAgent};
 
 use crate::{beacon::{Beacon, NodeIdentifier}, IpConfig};
 use std::sync::atomic::Ordering;
@@ -15,7 +15,7 @@ pub fn start_discovery(
     base_beacon: Beacon,
     period: Duration,
     node_id: NodeIdentifier,
-    aap: Agent
+    aap: RegisteredAgent<impl AapStream>
 ){
     let continue_trigger = Arc::new(AtomicBool::new(true));
 

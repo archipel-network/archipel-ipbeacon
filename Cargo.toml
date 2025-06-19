@@ -21,7 +21,7 @@ name = "parse-beacon"
 path = "src/parse-beacon.rs"
 
 [[bin]]
-name = "archipel-ipbeacons"
+name = "archipel-ipbeacon"
 path = "src/main.rs"
 
 [package.metadata.deb]

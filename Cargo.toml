@@ -1,6 +1,6 @@
 [package]
 name = "archipel-ipbeacon"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Archipel neighbour discovery"
 authors = ["EpicKiwi <me@epickiwi.fr>"]

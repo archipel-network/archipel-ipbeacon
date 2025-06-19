@@ -7,7 +7,7 @@ authors = ["EpicKiwi <me@epickiwi.fr>"]
 
 [dependencies]
 clap = { version = "4.3.23", features=["derive"]}
-ctrlc = "3.4.0"
+ctrlc = "3.5.0"
 serde = "1.0.183"
 serde_cbor = "0.11.2"
 ud3tn-aap = {git = "https://github.com/archipel-network/rust-ud3tn.git"}
@@ -32,6 +32,6 @@ section = "net"
 priority = "optional"
 maintainer-scripts = "package"
 assets = [
-    ["target/release/daemon", "usr/bin/archipel-ipbeacon", "755"],
+    ["target/release/archipel-ipbeacon", "usr/bin/archipel-ipbeacon", "755"],
     ["archipel-ipbeacon.service", "usr/lib/systemd/system/archipel-ipbeacon.service", "444"],
 ]
